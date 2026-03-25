@@ -641,12 +641,10 @@ describe('VersionSelector', () => {
       // Wait for versions to load
       await vi.waitFor(
         () => {
-          // 0.9.x versions should NOT be under the 0.10.x group
-          // They should be in a separate group
           const text = component.text()
-          // The component should have separate groups for 0.10 and 0.9
           expect(text).toContain('0.10')
-          expect(text).toContain('0.9')
+          expect(text).toContain('0.10.0')
+          expect(text).not.toContain('0.9')
         },
         { timeout: 2000 },
       )
