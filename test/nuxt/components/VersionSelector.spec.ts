@@ -468,6 +468,52 @@ describe('VersionSelector', () => {
       })
     })
 
+    it('does not reveal unrelated older groups when expanding a tagged row with nested versions', async () => {
+      mockFetchAllPackageVersions.mockResolvedValue([
+        { version: '1.2.0', time: '2024-01-15T12:00:00.000Z', hasProvenance: false },
+        { version: '1.1.0', time: '2024-01-12T12:00:00.000Z', hasProvenance: false },
+        { version: '1.0.0', time: '2024-01-10T12:00:00.000Z', hasProvenance: false },
+        { version: '0.9.0', time: '2024-01-08T12:00:00.000Z', hasProvenance: false },
+      ])
+
+      const component = await mountSuspended(VersionSelector, {
+        props: {
+          packageName: 'test-package',
+          currentVersion: '1.2.0',
+          versions: { '1.2.0': {}, '1.1.0': {}, '1.0.0': {}, '0.9.0': {} },
+          distTags: { latest: '1.2.0' },
+          urlPattern: '/package-docs/test-package/v/{version}',
+        },
+      })
+
+      const trigger = component.find('button[aria-haspopup="listbox"]')
+      await trigger.trigger('click')
+
+      const expandButton = component.find('[role="listbox"] button[aria-expanded="false"]')
+      await expandButton.trigger('click')
+
+      await vi.waitFor(() => {
+        expect(mockFetchAllPackageVersions).toHaveBeenCalledWith('test-package')
+      })
+
+      await vi.waitFor(() => {
+        const listboxText = component.find('[role="listbox"]').text()
+        expect(listboxText).toContain('1.1.0')
+        expect(listboxText).toContain('1.0.0')
+        expect(listboxText).not.toContain('0.9')
+      })
+
+      const expandedButton = component.find('[role="listbox"] button[aria-expanded="true"]')
+      await expandedButton.trigger('click')
+
+      await vi.waitFor(() => {
+        const listboxText = component.find('[role="listbox"]').text()
+        expect(listboxText).not.toContain('1.1.0')
+        expect(listboxText).not.toContain('1.0.0')
+        expect(listboxText).not.toContain('0.9')
+      })
+    })
+
     it('collapses additional version groups with ArrowLeft when showAllGroups is open', async () => {
       mockFetchAllPackageVersions.mockResolvedValue([
         { version: '1.0.0', time: '2024-01-15T12:00:00.000Z', hasProvenance: false },

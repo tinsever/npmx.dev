@@ -40,9 +40,7 @@ function isVersionLink(a: DOMWrapper<Element>): boolean {
   )
 }
 
-function getRouter(
-  component: Awaited<ReturnType<typeof mountSuspended>>,
-): Pick<typeof component.vm.$router, 'resolve'> {
+function getRouter(component: Awaited<ReturnType<typeof mountSuspended>>): Pick<typeof component.vm.$router, 'resolve'> {
   return component.vm.$router
 }
 

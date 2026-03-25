@@ -344,12 +344,15 @@ async function toggleGroup(groupId: string) {
   try {
     const allVersions = await loadAllVersions()
     processLoadedVersions(allVersions)
-    showAllGroups.value = hasAdditionalGroups.value
 
     // Find the group again after processing (it may have moved)
     const updatedGroup = versionGroups.value.find(g => g.id === groupId)
-    if (updatedGroup && hasNestedVersions(updatedGroup)) {
-      updatedGroup.isExpanded = true
+    if (updatedGroup) {
+      if (hasNestedVersions(updatedGroup)) {
+        updatedGroup.isExpanded = true
+      } else if (controlsAdditionalGroups(updatedGroup)) {
+        showAllGroups.value = true
+      }
     }
   } catch (error) {
     // eslint-disable-next-line no-console
